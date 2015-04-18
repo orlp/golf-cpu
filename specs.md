@@ -146,7 +146,8 @@ Flow control:
     jmp  l       ' |    1  | unconditional jump  | Unconditionally jumps to l.
     jz   l, a      |    1  | jump on zero        | Jumps to l if a is zero.
     jnz  l, a      |    1  | jump on non-zero    | Jumps to l if a is non-zero.
-    halt           |    1  | halt                | Halts the CPU.
+    halt a         |    1  | halt                | Halts the CPU with error code
+                   |       |                     | a. Error code 0 is success.
 
 ### __GOLF__ instruction encoding.
 
