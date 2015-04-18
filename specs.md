@@ -5,18 +5,18 @@ The reference assembler is written in Python3.
 The assembler supports a couple quality-of-life enhancements over just a series
 of instructions:
 
-    ; everything after a semicolon is a comment
+    ; Everything after a semicolon is a comment.
 
-    label:     
     ; A label is an identifier of the form [a-zA-Z_][a-zA-Z0-9_]+ followed by a
     ; colon. It is replaced in the final code by an offset in bytes from the
     ; start of the instruction stream to the first instruction after the label.
-
-    ; immediates may be full Python expressions, as long as they evaluate to a
-    ; 64-bit integer.
-    in a
-    add a, a, ord("a") - ord("A") ; equivalent to add a, a, 32
-    out a
+    tolower:     
+        ; Immediates may be full Python expressions, as long as they evaluate to
+        ; a 64-bit integer.
+        in a
+        add a, a, ord("a") - ord("A") ; Equivalent to add a, a, 32.
+        out a
+        jmp tolower
 
 ---
 
