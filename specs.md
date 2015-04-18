@@ -25,7 +25,7 @@ of instructions:
 The CPU has 26 general-purpose registers, `a`-`z`. All registers are 64 bit
 integers - there is no floating point. Signed integers are stored as two's
 complement. Memory is read/written in little endian. The _GOLF_ has no pipeline
-- every instruction is executed in order, and the previous instruction must
+ - every instruction is executed in order, and the previous instruction must
 always complete before the next one starts.
 
 Every instruction can have output registers and input operands. Operands can be
