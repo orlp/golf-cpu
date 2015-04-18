@@ -22,8 +22,8 @@ at memory address `0`, the stack starts at memory address `0xf0000000`, and both
 upwards. There is no implicitly addressed _ztack_ pointer in _GOLF_, but `z` will always
 be `0xf0000000` at program startup.
 
-Memory address `0xffffffff` is special - stores to this address will be written to the
-virtual machine's stdin, reads come from stdout.
+The byte at memory address `0xffffffff` is special - stores to this address will be
+written to the virtual machine's stdin, reads come from stdout.
 
 Instructions do not live in regular memory - they're in a seperate instruction memory
 that's neither readable nor writable. This memory starts at address `0`. Jump
@@ -81,7 +81,7 @@ The more complex register-to-register instructions:
     divu r, s, a, b |   10  | division       | Unsigned division number a by b. Puts the
                     |       |                | result in r and the remainder in s.
 
-Memory instructions:
+Memory and I/O instructions:
 
     instruction    | cycle | mnemonic            | description
     ---------------+-------+---------------------+------------------------------------
@@ -105,6 +105,7 @@ Memory instructions:
                    |       |                     | decrements a by 8.
     in   a       ' |    5  | stdin               | Reads one byte from stdin into a.
     out  a       ' |    1  | stdout              | Writes the low 8 bits of a to stdout.
+    rand a         |   
     
 Flow control:
 
@@ -113,19 +114,39 @@ Flow control:
     call f         |    1  | function call       | Saves all registers and jump to f.
     ret  ...       |    1  | function return     | Restore all but the given registers.
                    |       |                     | z is never restored.
-    jmp  l         |    1  | unconditional jump  | Unconditionally jumps to l.
+    jmp  l       ' |    1  | unconditional jump  | Unconditionally jumps to l.
     jz   l, a      |    1  | jump on zero        | Jumps to l if a is zero.
     jnz  l, a      |    1  | jump on non-zero    | Jumps to l if a is non-zero.
     halt           |    1  | halt                | Halts the CPU.
 
+Every instruction in _GOLF_ is `4 + 8*i` bytes long, where `i` is the number of
+immediates used in that instruction. `ret` is the only exception to the rules that
+follow, so we'll discuss it first.
 
+If the first 7 bits of the instruction are all 1s, the instruction is a `ret`
+instruction. The remaining 25 bits each tell whether or not that register should be
+restored, with the least significant bit being `a`, and the most significant bit `y`.
 
-### _GOLF_ reference implementation.
+If the instruction is not a `ret`, then the first 7 bits of the instruction form the
+instruction id, which tells you what instruction it is. The next `5*5` bits tell you
+what the register arguments for the instruction are. Each quintet of bits is to be
+interpreted as following:
 
-The reference implementation is written in Python3, and as such requries you to have it
+    0    no argument
+    1    immediate argument 
+    2-27 register a-z
+
+Then the 64-bit immediate values come after, in the order they were used in the
+instruction.
+
+### _GOLF_ reference assembler.
+
+The reference assembler is written in Python3, and as such requries you to have it
 installed.
 
 The assembler supports a couple quality-of-life enhancements:
 
     ; comments
+    labels:     ; a label must be an identifier of the form [a-zA-Z_][a-zA-Z0-9_]+
+
 
