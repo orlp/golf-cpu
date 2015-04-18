@@ -1,6 +1,11 @@
 ### _GOLF_ reference assembler.
 
-The reference assembler is written in Python3.
+The reference assembler is written in Python3. It turns a human readable
+assembly file into binary code that can run on the _GOLF_. The format is a
+simple one-instruction-per-line, with commas seperating arguments. The
+destination register(s) always come before the operands:
+
+    add a, b, c ; a = b + c
 
 The assembler supports a couple quality-of-life enhancements over just a series
 of instructions:
