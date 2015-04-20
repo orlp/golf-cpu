@@ -11,17 +11,46 @@ The assembler supports a couple quality-of-life enhancements over just a series
 of instructions:
 
     ; Everything after a semicolon is a comment.
+    ; All operations are one-per-line, end a line in a backslash (\) followed by
+    ; only whitespace to split up long lines.
+
+    ; You may assign arbitrary Python expressions to an assembly variable
+    ; (registers are special variables).
+    tmp = a
 
     ; A label is an identifier of the form [a-zA-Z_][a-zA-Z0-9_]+ followed by a
     ; colon. It is replaced in the final code by an offset in bytes from the
     ; start of the instruction stream to the first instruction after the label.
     tolower:     
-        ; Immediates may be full Python expressions, as long as they evaluate to
-        ; a 64-bit integer.
-        in a
-        add a, a, ord("a") - ord("A") ; Equivalent to add a, a, 32.
-        out a
+        ; Arguments may be full Python expressions, as long as they evaluate to
+        ; a 64-bit integer or a register.
+        in c
+        add tmp, c, ord("a") - ord("A") ; Equivalent to add a, c, 32.
+        out tmp
         jmp tolower
+
+Finally, you can put read-only data into the binary, and get back an address to
+it by calling the `data()` function. Repeated calls to the same data will return
+the same address:
+
+    ; Strings get turned into UTF-8 encoded series of bytes followed by a 0.
+    hello_world = "Hello, world!" 
+
+    ; Bytes are embedded as-is,
+    rawbytes = b"\x00\x01"
+
+    ; Lists of integers will become a series of 64-bit little-endian integers in
+    ; the data section.
+    small_squares = [n*n for n in range(10)] 
+
+        mov a, data(hello_world)
+    print_loop:
+        lbu c, a
+        jz  c, done
+        inc a
+        out c
+    done:
+        halt
 
 ---
 
@@ -47,8 +76,8 @@ A virtual machine implementation will likely produce debugging output.
 The virtual machine will have a user-defined amount of heap and stack memory
 available for the _GOLF_. It is also possible that the memory will grow
 on-demand. The heap starts at memory address `0`, the stack starts at memory
-address `0xf0000000`, and both grow upwards. There is no implicitly addressed
-_ztack_ pointer in _GOLF_, but `z` will always be `0xf0000000` at program
+address `0x10000000`, and both grow upwards. There is no implicitly addressed
+_ztack_ pointer in _GOLF_, but `z` will always be `0x10000000` at program
 startup.
 
 The byte at memory address `0xffffffff` is special - stores to this address will
@@ -135,9 +164,6 @@ instructions):
                    |       |                     | and increment a by 8.
     pop  a, b    ' |    6  | pop                 | Read 64-bit int b at a and
                    |       |                     | decrements a by 8.
-    in   r       ' |    5  | stdin               | Read byte from stdin into r.
-    out  b       ' |    1  | stdout              | Write low 8 bits of b to
-                   |       |                     | stdout.
     rand r         |  100  | random              | Put random 64-bit int in r.
     
 Flow control:
@@ -154,10 +180,15 @@ Flow control:
     halt a         |    1  | halt                | Halts the CPU with error code
                    |       |                     | a. Error code 0 is success.
 
+---
+
+Everything below this line is only of interest to those looking to implement a
+_GOLF_ assembler, virtual machine or other tool.
+
 ### _GOLF_ instruction encoding.
 
-Every instruction in _GOLF_ is `4 + 8*i` bytes long, where `i` is the number of
-immediates used in that instruction. The first 7 bits of the instruction form
+Every instruction in _GOLF_ is `4 + i` bytes long, where `i` is the total size
+of immediates used in that instruction. The first 7 bits of the instruction form
 the instruction id.
 
 If the instruction id is `0x7f`, the instruction is a `ret` instruction. The
@@ -196,6 +227,12 @@ All instruction ids can be found in the table below:
     0e | lequ    1e | rand     
     0f | mul     1f | call     
                        
+### _GOLF_ binary format.
+
+The first 8 bytes of the binary format is a little-endian 64-bit unsigned number
+indicating how large the data section is. Then follows that many bytes of data
+that will be accessible at starting address `0x20000000`. Then the instruction
+stream begins, going until the end of the file.
                        
                        
                        
