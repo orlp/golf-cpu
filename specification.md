@@ -3,29 +3,29 @@
 The reference assembler is written in Python3. It turns a human readable
 assembly file into binary code that can run on the _GOLF_. The format is a
 simple one-instruction-per-line, with commas seperating arguments. The
-destination register(s) always come before the operands:
+destinations always come before the operands. For example `a = b + c`:
 
-    add a, b, c ; a = b + c
+    add a, b, c
 
-The assembler supports a couple quality-of-life enhancements over just a series
-of instructions:
+The assembler supports a couple preprocessor quality-of-life enhancements over
+just a series of instructions:
 
-    ; Everything after a semicolon is a comment.
-    ; All operations are one-per-line, end a line in a backslash (\) followed by
-    ; only whitespace to split up long lines.
+    # Everything after a pound (#) is a comment.
+    # All operations are one-per-line, end a line in a backslash (\) followed by
+    # only whitespace to split up long lines.
 
-    ; You may assign arbitrary Python expressions to an assembly variable
-    ; (registers are special variables).
+    # You may assign arbitrary Python expressions to an assembly variable
+    # (registers are special objects).
     tmp = a
 
-    ; A label is an identifier of the form [a-zA-Z_][a-zA-Z0-9_]+ followed by a
-    ; colon. It is replaced in the final code by an offset in bytes from the
-    ; start of the instruction stream to the first instruction after the label.
+    # A label is an identifier of the form [a-zA-Z_][a-zA-Z0-9_]+ followed by a
+    # colon. It is replaced in the final code by an offset in bytes from the
+    # start of the instruction stream to the first instruction after the label.
     tolower:     
-        ; Arguments may be full Python expressions, as long as they evaluate to
-        ; a 64-bit integer or a register.
+        # Arguments may be full Python expressions, as long as they evaluate to
+        # a 64-bit integer or a register.
         in c
-        add tmp, c, ord("a") - ord("A") ; Equivalent to add a, c, 32.
+        add tmp, c, ord("a") - ord("A") # Equivalent to add a, c, 32.
         out tmp
         jmp tolower
 
@@ -33,14 +33,14 @@ Finally, you can put read-only data into the binary, and get back an address to
 it by calling the `data()` function. Repeated calls to the same data will return
 the same address:
 
-    ; Strings get turned into UTF-8 encoded series of bytes followed by a 0.
+    # Strings get turned into UTF-8 encoded series of bytes followed by a 0.
     hello_world = "Hello, world!" 
 
-    ; Bytes are embedded as-is,
+    # Bytes are embedded as-is,
     rawbytes = b"\x00\x01"
 
-    ; Lists of integers will become a series of 64-bit little-endian integers in
-    ; the data section.
+    # Lists of integers will become a series of 64-bit little-endian integers in
+    # the data section.
     small_squares = [n*n for n in range(10)] 
 
         mov a, data(hello_world)
@@ -200,8 +200,11 @@ bits tell you what arguments for the instruction are. Each quintet of bits is to
 be interpreted as following:
 
     0    no argument
-    1    immediate argument 
-    2-27 register a-z
+    1    8 bit signed immediate
+    2    16 bit signed immediate
+    3    32 bit signed immediate
+    4    64 bit immediate
+    5-31 register a-z
 
 Then the 64-bit immediate values - if any - come after, in the order they were
 used in the instruction.
