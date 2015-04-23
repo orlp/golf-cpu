@@ -76,12 +76,12 @@ A virtual machine implementation will likely produce debugging output.
 The virtual machine will have a user-defined amount of heap and stack memory
 available for the _GOLF_. It is also possible that the memory will grow
 on-demand. The heap starts at memory address `0`, the stack starts at memory
-address `0x10000000`, and both grow upwards. There is no implicitly addressed
-_ztack_ pointer in _GOLF_, but `z` will always be `0x10000000` at program
-startup.
+address `0x1000000000000000`, and both grow upwards. There is no implicitly
+addressed _ztack_ pointer in _GOLF_, but `z` will always be `0x1000000000000000`
+at program startup, the other registers will be `0`.
 
-The byte at memory address `0xffffffff` is special - stores to this address will
-be written to the virtual machine's stdin, reads come from stdout.
+Memory address `0xffffffffffffffff` is special - stores to this address will be
+written to the virtual machine's stdin, reads come from stdout.
 
 Instructions do not live in regular memory - they're in a seperate instruction
 memory that's neither readable nor writable. This memory starts at address `0`.
@@ -162,8 +162,8 @@ instructions):
     sw   a, b      |    1  | store word          | Store 64-bit int b at a.
     push a, b    ' |    2  | push                | Store 64-bit int b at a
                    |       |                     | and increment a by 8.
-    pop  a, b    ' |    6  | pop                 | Read 64-bit int b at a and
-                   |       |                     | decrements a by 8.
+    pop  r, a    ' |    6  | pop                 | Load 64-bit int at a and
+                   |       |                     | decrement a by 8.
     rand r         |  100  | random              | Put random 64-bit int in r.
     
 Flow control:
@@ -199,14 +199,14 @@ Otherwise, the instruction id can be found in the table below. The next `5*5`
 bits tell you what arguments for the instruction are. Each quintet of bits is to
 be interpreted as following:
 
-    0    no argument
+    0    immediate value 0
     1    8 bit signed immediate
     2    16 bit signed immediate
     3    32 bit signed immediate
     4    64 bit immediate
-    5-31 register a-z
+    5-30 register a-z
 
-Then the 64-bit immediate values - if any - come after, in the order they were
+Then the non-zero immediate values - if any - come after, in the order they were
 used in the instruction.
 
 All instruction ids can be found in the table below:
@@ -221,7 +221,7 @@ All instruction ids can be found in the table below:
     05 | shr     15 | ls       
     06 | sar     16 | lsu      
     07 | add     17 | li       
-    08 | sub     18 | lsu      
+    08 | sub     18 | liu      
     09 | cmp     19 | lw       
     0a | neq     1a | sb       
     0b | le      1b | ss       
@@ -232,10 +232,10 @@ All instruction ids can be found in the table below:
                        
 ### _GOLF_ binary format.
 
-The first 8 bytes of the binary format is a little-endian 64-bit unsigned number
+The first 4 bytes of the binary format is a little-endian 32-bit unsigned number
 indicating how large the data section is. Then follows that many bytes of data
-that will be accessible at starting address `0x20000000`. Then the instruction
-stream begins, going until the end of the file.
+that will be accessible at starting address `0x2000000000000000`. Then the
+instruction stream begins, going until the end of the file.
                        
                        
                        
