@@ -1,0 +1,8 @@
+restart:
+    lw a, -1
+    cmp q, a, -1
+    jnz eof, q
+    sw -1, a
+    jmp restart
+eof:
+    halt 0
