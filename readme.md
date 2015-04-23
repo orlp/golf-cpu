@@ -21,3 +21,9 @@ command line interface. Example usage:
     $ python3 as.py examples/helloworld.golf
     $ python3 golf.py examples/helloworld.bin
     Hello, world!
+    $ echo foobar | python3 as.py -r examples/cat.golf
+    foobar
+    $ python3 as.py examples/fibonacci.golf
+    $ python3 golf.py -p f examples/fibonacci.bin f=25
+    75025
+    Execution terminated after 154 cycles with exit code 0.

@@ -1,0 +1,12 @@
+    mov a, 0
+    mov b, 1
+fib_loop:
+    jz fib_done, f
+    dec f
+    add t, a, b
+    mov b, a
+    mov a, t
+    jmp fib_loop
+fib_done:
+    mov f, a
+    halt 0

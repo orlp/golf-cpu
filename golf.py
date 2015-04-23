@@ -4,6 +4,7 @@ import idata
 import string
 import random
 import argparse
+import ast
 
 class GolfCPU:
     def __init__(self, binary):
@@ -63,8 +64,8 @@ class GolfCPU:
     def load(self, a, width):
         if a == 0xffffffffffffffff:
             if width != 8: raise RuntimeError("May only use lw/sw for stdin/stdout.")
-            r = ord(sys.stdin.read(1))
-            return r or self.u(-1)
+            r = sys.stdin.read(1)
+            return ord(r) if r else self.u(-1)
 
         if a >= 0x2000000000000000:
             a = a - 0x2000000000000000
@@ -190,14 +191,33 @@ class GolfCPU:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="GOLF virtual machine.")
     parser.add_argument("file", help="binary to run")
+    parser.add_argument("reg", nargs="*",
+                        help="list of initial register assignments (a=42 b=0xdead)")
+    parser.add_argument("-p", help="comma seperated list of registers to print at program exit")
+    parser.add_argument("-d", dest="debug", action="store_true",
+                        help="enable debug output")
+    parser.set_defaults(debug=False)
 
     args = parser.parse_args()
 
     with open(args.file, "rb") as binfile:
         golf = GolfCPU(binfile.read())
+        if not args.reg is None:
+            for assignment in args.reg:
+                reg, val = assignment.split("=")
+                val = ast.literal_eval(val)
+                golf.regs[reg] = val
+
         ret = golf.run()
+
+        if args.p:
+            regs = args.p.split(",")
+            print(", ".join(str(golf.regs[reg]) for reg in regs))
         
-        print("Execution terminated after {} cycles with exit code {}. Register file at exit:"
-              .format(golf.cycle_count, ret))
-        for reg in string.ascii_lowercase:
-            print("{0}: {1:<20} 0x{1:x}".format(reg, golf.regs[reg]))
+        m = "Execution terminated after {} cycles with exit code {}.".format(golf.cycle_count, ret)
+        if args.debug: m += " Register file at exit:"
+        print(m)
+
+        if args.debug:
+            for reg in string.ascii_lowercase:
+                print("{0}: {1:<20} 0x{1:x}".format(reg, golf.regs[reg]))
