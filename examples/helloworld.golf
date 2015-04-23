@@ -1,0 +1,7 @@
+    mov a, data("Hello, world!\n")
+print_loop:
+    lbu c, a
+    inc a
+    sw -1, c
+    jnz print_loop, c
+    halt 0
