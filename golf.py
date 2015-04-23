@@ -62,8 +62,12 @@ class GolfCPU:
 
     def load(self, a, width):
         if a == 0xffffffffffffffff:
-            r = sys.stdin.buffer.read(width)
-        elif a >= 0x2000000000000000:
+            if width != 8: raise RuntimeError("May only use lw/sw for stdin/stdout.")
+            r = sys.stdin.buffer.read(1)
+            if r: return r[0]
+            return self.u(-1)
+
+        if a >= 0x2000000000000000:
             a = a - 0x2000000000000000
             r = self.data[a:a+width]
         elif a >= 0x1000000000000000:
@@ -76,12 +80,15 @@ class GolfCPU:
         return struct.unpack("<" + fmts[width], r)[0]
 
     def store(self, a, b, width):
-        fmts = {1: "B", 2: "S", 4: "I", 8: "Q"}
-        b = struct.pack("<" + fmts[width], b & ((1 << (8*width)) - 1))
 
         if a == 0xffffffffffffffff:
-            sys.stdout.buffer.write(b)
-        elif a >= 0x2000000000000000:
+            if width != 8: raise RuntimeError("May only use lw/sw for stdin/stdout.")
+            sys.stdout.buffer.write(bytes([b & 0xff]))
+            return
+        
+        fmts = {1: "B", 2: "S", 4: "I", 8: "Q"}
+        b = struct.pack("<" + fmts[width], b & ((1 << (8*width)) - 1))
+        if a >= 0x2000000000000000:
             raise RuntimeError("Attempt to store in read-only data section.")
         elif a >= 0x1000000000000000:
             a = a - 0x1000000000000000

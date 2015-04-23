@@ -40,8 +40,9 @@ class Instr:
 
         n = 4
         for arg in self.args:
-            if isinstance(arg, Reg): continue
+            if   isinstance(arg, Reg):   n += 0
             elif isinstance(arg, Label): n += 4
+            elif            arg == 0:    n += 0
             elif   -2**7 <= arg <  2**7: n += 1
             elif  -2**15 <= arg < 2**15: n += 2
             elif  -2**31 <= arg < 2**31: n += 4
@@ -65,6 +66,9 @@ class Instr:
         for arg in self.args:
             if isinstance(arg, Reg):
                 flags.append(5 + string.ascii_lowercase.index(arg.reg))
+            elif isinstance(arg, Label):
+                flags.append(3)
+                immediates += struct.pack("<i", arg.offset)
             elif arg == 0:
                 flags.append(0)
             elif -2**7 <= arg <  2**7:
@@ -285,22 +289,25 @@ def assemble(lines):
 
                 instr.args[i] = data_offsets[arg.data]
 
+    # Translate pseudo-instructions.
+    instr_nrs = {}
+    n = 0
+    no_pseudo = []
+    for i, instr in enumerate(instructions):
+        instr_nrs[i] = n
+        for name, args in translate_pseudo_instr(instr.instr, instr.args):
+            no_pseudo.append(Instr(instr.debug_line, name, args))
+            n += 1
     
     # Label substitution pass.
     offsets = [0]
     for instr in instructions:
         offsets.append(offsets[-1] + instr.size())
 
-    for instr in instructions:
+    for instr in no_pseudo:
         for i, arg in enumerate(instr.args):
             if isinstance(arg, Label):
-                instr.args[i] = offsets[arg.instr_nr]
-
-    no_pseudo = []
-    # Translate pseudo-instructions.
-    for instr in instructions:
-        for name, args in translate_pseudo_instr(instr.instr, instr.args):
-            no_pseudo.append(Instr(instr.debug_line, name, args))
+                arg.offset = offsets[instr_nrs[arg.instr_nr]]
 
     # Encode instructions.
     instr_stream = b""
