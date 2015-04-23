@@ -3,6 +3,7 @@ import struct
 import idata
 import string
 import random
+import argparse
 
 class GolfCPU:
     def __init__(self, binary):
@@ -179,12 +180,13 @@ class GolfCPU:
         raise RuntimeError("Instruction pointer outside of executable memory!")
 
 
-if len(sys.argv) < 2:
-    print("Usage: {} <binary>".format(sys.argv[0]))
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="GOLF virtual machine.")
+    parser.add_argument("file", help="binary to run")
 
+    args = parser.parse_args()
 
-with open(sys.argv[1], "rb") as binfile:
-    golf = GolfCPU(binfile.read())
-
-ret = golf.run()
-print(ret, golf.cycle_count)
+    with open(args.file, "rb") as binfile:
+        golf = GolfCPU(binfile.read())
+        ret = golf.run()
+        print(ret, golf.cycle_count)
