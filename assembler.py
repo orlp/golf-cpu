@@ -5,6 +5,9 @@ import string
 import collections
 import struct
 import idata
+import argparse
+import os
+import json
 
 class SyntaxError(Exception):
     # Hide __main__.
@@ -308,7 +311,19 @@ def assemble(lines):
     return struct.pack("<I", len(data_segment)) + data_segment + instr_stream, debug
 
 
-with open("test.golf") as in_file:
-    binary, debug = assemble(in_file)
-    with open("test.bin", "wb") as out_file:
-        out_file.write(binary)
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="GOLF assembler.")
+    parser.add_argument("file", help="source file")
+    parser.add_argument("-o", metavar="file", help="output file")
+    parser.add_argument("-d", metavar="file", help="debug file")
+
+    args = parser.parse_args()
+    if args.o is None: args.o = os.path.splitext(args.file)[0] + ".bin"
+    if args.d is None: args.d = os.path.splitext(args.file)[0] + ".dbg"
+
+    with open(args.file) as in_file:
+        lines = [l.rstrip() for l in in_file]
+        binary, debug = assemble(lines)
+        debug["lines"] = lines
+        with open(args.o, "wb") as out_file: out_file.write(binary)
+        with open(args.d, "w") as dbg_file: json.dump(debug, dbg_file)

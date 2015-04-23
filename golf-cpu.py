@@ -4,10 +4,6 @@ import idata
 import string
 import random
 
-if len(sys.argv) < 2:
-    print("Usage: {} <binary>".format(sys.argv[0]))
-
-
 class GolfCPU:
     def __init__(self, binary):
         data_len = struct.unpack_from("<I", binary)[0]
@@ -19,6 +15,7 @@ class GolfCPU:
         self.regstack = []
         self.stack = []
         self.heap = []
+        self.cycle_count = 0
 
     def unpack_imm(self, fmt):
         r = struct.unpack_from("<" + fmt, self.instructions, self.isp)[0]
@@ -110,8 +107,7 @@ class GolfCPU:
             if isinstance(args[i], str):
                 args[i] = self.regs[args[i]]
 
-        if instr == "halt": sys.exit(args[0])
-        elif instr == "not":  self.regs[args[0]] = int(not args[1])
+        if instr == "not":  self.regs[args[0]] = int(not args[1])
         elif instr == "or":   self.regs[args[0]] = args[1] | args[2]
         elif instr == "xor":  self.regs[args[0]] = args[1] ^ args[2]
         elif instr == "and":  self.regs[args[0]] = args[1] & args[2]
@@ -144,9 +140,12 @@ class GolfCPU:
         elif instr == "rand": self.regs[args[0]] = random.randrange(1 << 64)
         elif instr == "jz":   self.isp = args[0] if not args[1] else self.isp
         elif instr == "jnz":  self.isp = args[0] if     args[1] else self.isp
+        elif instr == "call":
+            self.regstack.append(self.regs.copy())
+            self.isp = args[0]
         else: assert(False)
 
-#     "call": 0x1f,
+        self.cycle_count += idata.cycle_counts[instr]
 
     def run(self):
         while self.isp < len(self.instructions):
@@ -174,15 +173,18 @@ class GolfCPU:
 
                 instr_args += [0] * (5 - len(instr_args))
 
+            if instr_name == "halt": return instr_args[0]
             self.execute_instr(instr_name, instr_args)
 
         raise RuntimeError("Instruction pointer outside of executable memory!")
-    
 
+
+if len(sys.argv) < 2:
+    print("Usage: {} <binary>".format(sys.argv[0]))
 
 
 with open(sys.argv[1], "rb") as binfile:
     golf = GolfCPU(binfile.read())
 
-
-golf.run()
+ret = golf.run()
+print(ret, golf.cycle_count)
