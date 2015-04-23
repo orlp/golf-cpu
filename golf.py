@@ -80,10 +80,10 @@ class GolfCPU:
         return struct.unpack("<" + fmts[width], r)[0]
 
     def store(self, a, b, width):
-
         if a == 0xffffffffffffffff:
             if width != 8: raise RuntimeError("May only use lw/sw for stdin/stdout.")
             sys.stdout.buffer.write(bytes([b & 0xff]))
+            sys.stdout.flush()
             return
         
         fmts = {1: "B", 2: "S", 4: "I", 8: "Q"}
