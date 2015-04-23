@@ -13,7 +13,7 @@ class GolfCPU:
         self.isp = 0
         self.regs = {k: 0 for k in string.ascii_lowercase}
         self.regs["z"] = 0x1000000000000000
-        self.regstack = []
+        self.callstack = []
         self.stack = []
         self.heap = []
         self.cycle_count = 0
@@ -45,7 +45,7 @@ class GolfCPU:
         return self.u(self.shr(a, b))
     
     def mul(self, a, b):
-        return self.mul(self.twos(a), self.twos(b))
+        return self.mulu(self.twos(a), self.twos(b))
 
     def mulu(self, a, b):
         r = (a * b) & ((1 << 128) - 1)
@@ -63,9 +63,8 @@ class GolfCPU:
     def load(self, a, width):
         if a == 0xffffffffffffffff:
             if width != 8: raise RuntimeError("May only use lw/sw for stdin/stdout.")
-            r = sys.stdin.buffer.read(1)
-            if r: return r[0]
-            return self.u(-1)
+            r = ord(sys.stdin.read(1))
+            return r or self.u(-1)
 
         if a >= 0x2000000000000000:
             a = a - 0x2000000000000000
@@ -77,12 +76,12 @@ class GolfCPU:
             r = self.heap[a:a+width]
 
         fmts = {1: "B", 2: "S", 4: "I", 8: "Q"}
-        return struct.unpack("<" + fmts[width], r)[0]
+        return struct.unpack("<" + fmts[width], bytes(r))[0]
 
     def store(self, a, b, width):
         if a == 0xffffffffffffffff:
             if width != 8: raise RuntimeError("May only use lw/sw for stdin/stdout.")
-            sys.stdout.buffer.write(bytes([b & 0xff]))
+            sys.stdout.write(chr(b & 0xff))
             sys.stdout.flush()
             return
         
@@ -102,11 +101,12 @@ class GolfCPU:
 
     def execute_instr(self, instr, args):
         if instr == "ret":
-            if not self.regstack:
+            if not self.callstack:
                 raise RuntimeError("Return executed while callstack is empty.")
 
-            old_regs = self.regstack.pop()
+            old_isp, old_regs = self.callstack.pop()
             old_regs.update({k: self.regs[k] for k in args})
+            self.isp = old_isp
             self.regs = old_regs
             return
 
@@ -149,7 +149,7 @@ class GolfCPU:
         elif instr == "jz":   self.isp = args[0] if not args[1] else self.isp
         elif instr == "jnz":  self.isp = args[0] if     args[1] else self.isp
         elif instr == "call":
-            self.regstack.append(self.regs.copy())
+            self.callstack.append((self.isp, self.regs.copy()))
             self.isp = args[0]
         else: assert(False)
 
@@ -196,4 +196,8 @@ if __name__ == "__main__":
     with open(args.file, "rb") as binfile:
         golf = GolfCPU(binfile.read())
         ret = golf.run()
-        print(ret, golf.cycle_count)
+        
+        print("Execution terminated after {} cycles with exit code {}. Register file at exit:"
+              .format(golf.cycle_count, ret))
+        for reg in string.ascii_lowercase:
+            print("{0}: {1:<20} 0x{1:x}".format(reg, golf.regs[reg]))

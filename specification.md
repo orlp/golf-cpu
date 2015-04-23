@@ -164,8 +164,8 @@ instructions):
     sw   a, b      |    1  | store word          | Store 64-bit int b at a.
     push a, b    ' |    2  | push                | Store 64-bit int b at a
                    |       |                     | and increment a by 8.
-    pop  r, a    ' |    6  | pop                 | Load 64-bit int at a and
-                   |       |                     | decrement a by 8.
+    pop  r, a    ' |    6  | pop                 | Decrement a by 8 and load
+                   |       |                     | 64-bit int at a.
     rand r         |  100  | random              | Put random 64-bit int in r.
     
 Flow control:

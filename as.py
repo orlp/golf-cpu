@@ -1,25 +1,27 @@
-import re
-import tokenize
-import io
-import string
-import collections
-import struct
-import idata
 import argparse
-import os
-import json
+import collections
 import golf
+import idata
+import io
+import json
+import os
+import re
+import string
+import struct
+import sys
+import tokenize
 
 class SyntaxError(Exception):
     # Hide __main__.
     __module__ = Exception.__module__
 
 class Label:
-    def __init__(self, instr_nr):
+    def __init__(self, instr_nr, name):
         self.instr_nr = instr_nr
+        self.name = name
     
     def __repr__(self):
-        return "Label({!r})".format(self.instr_nr)
+        return "Label({!r}, {!r})".format(self.instr_nr, self.name)
 
 
 class Reg:
@@ -189,10 +191,10 @@ def translate_pseudo_instr(instr, args):
         return [["jz", [args[0], 0]],]
 
     elif instr == "push":
-        return [["sw", args[0], args[1]], ["add", args[0], args[0], 8]]
+        return [["sw", [args[0], args[1]]], ["add", [args[0], args[0], 8]]]
     
     elif instr == "pop":
-        return [["lw", args[0], args[1]], ["sub", args[1], args[1], 8]]
+        return [["sub", [args[1], args[1], 8]], ["lw", [args[0], args[1]]]]
 
     return [[instr, args],]
 
@@ -238,7 +240,7 @@ def preprocess(lines):
                 raise SyntaxError(
                     "Duplicate label name on line {}:\n{}".format(lnr + 1, lines[lnr]))
 
-            variables[ident] = Label(num_instructions)
+            variables[ident] = Label(num_instructions, ident)
 
         elif not rest.startswith("="):
             num_instructions += 1
@@ -298,16 +300,17 @@ def assemble(lines):
         for name, args in translate_pseudo_instr(instr.instr, instr.args):
             no_pseudo.append(Instr(instr.debug_line, name, args))
             n += 1
-    
+
     # Label substitution pass.
     offsets = [0]
-    for instr in instructions:
+    for instr in no_pseudo:
         offsets.append(offsets[-1] + instr.size())
 
+    labels = {}
     for instr in no_pseudo:
         for i, arg in enumerate(instr.args):
             if isinstance(arg, Label):
-                arg.offset = offsets[instr_nrs[arg.instr_nr]]
+                arg.offset = labels[arg.name] = offsets[instr_nrs[arg.instr_nr]]
 
     # Encode instructions.
     instr_stream = b""
@@ -315,6 +318,8 @@ def assemble(lines):
     for instr in no_pseudo:
         debug[len(instr_stream)] = instr.debug_line
         instr_stream += instr.encode()
+
+    debug["labels"] = labels
 
     return struct.pack("<I", len(data_segment)) + data_segment + instr_stream, debug
 
@@ -337,7 +342,7 @@ if __name__ == "__main__":
         binary, debug = assemble(lines)
 
         if args.run:
-            golf.GolfCPU(binary).run()
+            sys.exit(golf.GolfCPU(binary).run())
         else:
             debug["lines"] = lines
             with open(args.o, "wb") as out_file: out_file.write(binary)

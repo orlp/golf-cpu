@@ -2,9 +2,9 @@
 
 _GOLF_ is a tiny CPU architecture designed to facilitate programming contests.
 It provides a simple to understand controlled environment where performance can
-be measured and tracked to the individual cycle. It can provide an unambiguous
-winning criterium for either the speed in cycles or size in instructions of a
-solution.
+be measured and tracked down to the individual cycle. It can provide an
+unambiguous winning criterium for either the speed in cycles or size in
+instructions of a solution.
 
 The architecture was designed with simplicity as its main goal. It should be
 very easy to start coding in _GOLF_ assembly by just reading the specification

@@ -1,0 +1,45 @@
+    call read_int
+    call factorial
+    mov x, f
+    call write_int
+    halt 0
+
+read_int:
+    mov x, 0
+read_int_loop:
+    lw c, -1
+    cmp q, c, ord("\n")
+    jnz read_int_done, q
+    sub c, c, ord("0")
+    mulu x, d, x, 10
+    add x, x, c
+    jmp read_int_loop
+read_int_done:
+    ret x, c
+
+write_int:
+    push z, -1
+write_int_divloop:
+    divu x, m, x, 10
+    push z, m
+    jnz write_int_divloop, x
+write_int_outloop:
+    pop d, z
+    cmp q, d, -1
+    jnz write_int_done, q
+    add d, d, ord("0")
+    sw -1, d
+    jmp write_int_outloop
+write_int_done:
+    sw -1, ord("\n")
+    ret
+
+factorial:
+    mov f, 1
+factorial_loop:
+    jz factorial_done, x
+    mulu f, d, f, x
+    dec x
+    jmp factorial_loop
+factorial_done:
+    ret f
