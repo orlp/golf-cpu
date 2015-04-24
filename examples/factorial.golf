@@ -18,20 +18,12 @@ read_int_done:
     ret x
 
 write_int:
-    push z, -1
-write_int_divloop:
     divu x, m, x, 10
-    push z, m
-    jnz write_int_divloop, x
-write_int_outloop:
-    pop d, z
-    cmp q, d, -1
-    jnz write_int_done, q
-    add d, d, ord("0")
-    sw -1, d
-    jmp write_int_outloop
+    jz write_int_done, x
+    call write_int
 write_int_done:
-    sw -1, ord("\n")
+    add m, m, ord("0")
+    sw -1, m
     ret
 
 factorial:

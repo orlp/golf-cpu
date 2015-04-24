@@ -206,22 +206,23 @@ if __name__ == "__main__":
 
     with open(args.file, "rb") as binfile:
         golf = GolfCPU(binfile.read())
-        if not args.reg is None:
-            for assignment in args.reg:
-                reg, val = assignment.split("=")
-                val = ast.literal_eval(val)
-                golf.regs[reg] = val
 
-        ret = golf.run()
+    if not args.reg is None:
+        for assignment in args.reg:
+            reg, val = assignment.split("=")
+            val = ast.literal_eval(val)
+            golf.regs[reg] = val
 
-        if args.p:
-            regs = args.p.split(",")
-            print(", ".join(str(golf.regs[reg]) for reg in regs))
-        
-        m = "Execution terminated after {} cycles with exit code {}.".format(golf.cycle_count, ret)
-        if args.debug: m += " Register file at exit:"
-        print(m)
+    ret = golf.run()
 
-        if args.debug:
-            for reg in string.ascii_lowercase:
-                print("{0}: {1:<20} 0x{1:x}".format(reg, golf.regs[reg]))
+    if args.p:
+        regs = args.p.split(",")
+        print(", ".join(str(golf.regs[reg]) for reg in regs))
+    
+    m = "Execution terminated after {} cycles with exit code {}.".format(golf.cycle_count, ret)
+    if args.debug: m += " Register file at exit:"
+    print(m)
+
+    if args.debug:
+        for reg in string.ascii_lowercase:
+            print("{0}: {1:<20} 0x{1:x}".format(reg, golf.regs[reg]))
