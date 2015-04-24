@@ -15,7 +15,7 @@ read_int_loop:
     add x, x, c
     jmp read_int_loop
 read_int_done:
-    ret x, c
+    ret x
 
 write_int:
     push z, -1
