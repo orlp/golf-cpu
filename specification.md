@@ -14,16 +14,19 @@ just a series of instructions:
     # All operations are one-per-line, end a line in a backslash (\) followed by
     # only whitespace to split up long lines.
 
-    # You may assign arbitrary Python expressions to an assembly variable
-    # (registers are special objects).
+    # There are 27 pre-initialized variables in GOLF, a-z and data. a-z are
+    # initialized to register objects. Register objects will be replaced in the
+    # final binary by a register. You may assign arbitrary Python expressions to
+    # variables yourself as well:
     tmp = a
 
     # A label is an identifier of the form [a-zA-Z_][a-zA-Z0-9_]+ followed by a
-    # colon. It is replaced in the final code by an offset in bytes from the
-    # start of the instruction stream to the first instruction after the label.
+    # colon. It adds a new variable containing a label object that is replaced
+    # in the final binary by an offset in bytes from the start of the
+    # instruction stream to the first instruction after the label.
     tolower:     
         # Arguments may be full Python expressions, as long as they evaluate to
-        # a 64-bit integer or a register.
+        # a 64-bit integer, a register or a label.
         lw c, -1
         add tmp, c, ord("a") - ord("A") # Equivalent to add a, c, 32.
         sw -1, c
@@ -126,7 +129,7 @@ Here are all the simple register-to-register instructions:
 
 A note on the shifts - unlike in C, any value for `b` is allowed. Shifts widths
 bigger than 64 always result in 0, and negative shift widths flip the shift
-direction.
+direction. Comparisons result in 0 for false, 1 for true.
 
 The more complex register-to-register instructions:
 
