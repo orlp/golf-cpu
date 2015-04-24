@@ -239,28 +239,3 @@ indicating how large the data section is. Then follows that many bytes of data
 that will be accessible at starting address `0x2000000000000000`. Then the
 instruction stream begins, going until the end of the file.
                        
-                       
-                       
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-
-
-
-
-
-

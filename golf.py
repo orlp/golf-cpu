@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import sys
 import struct
 import idata
@@ -7,7 +9,7 @@ import argparse
 import ast
 
 class GolfCPU:
-    def __init__(self, binary):
+    def __init__(self, binary, i=sys.stdin, o=sys.stdout):
         data_len = struct.unpack_from("<I", binary)[0]
         self.data = binary[4:4+data_len]
         self.instructions = binary[4+data_len:]
@@ -18,6 +20,8 @@ class GolfCPU:
         self.stack = []
         self.heap = []
         self.cycle_count = 0
+        self.stdin = i
+        self.stdout = o
 
     def unpack_imm(self, fmt):
         r = struct.unpack_from("<" + fmt, self.instructions, self.isp)[0]
@@ -64,7 +68,7 @@ class GolfCPU:
     def load(self, a, width):
         if a == 0xffffffffffffffff:
             if width != 8: raise RuntimeError("May only use lw/sw for stdin/stdout.")
-            r = sys.stdin.read(1)
+            r = self.stdin.read(1)
             return ord(r) if r else self.u(-1)
 
         if a >= 0x2000000000000000:
@@ -82,8 +86,8 @@ class GolfCPU:
     def store(self, a, b, width):
         if a == 0xffffffffffffffff:
             if width != 8: raise RuntimeError("May only use lw/sw for stdin/stdout.")
-            sys.stdout.write(chr(b & 0xff))
-            sys.stdout.flush()
+            self.stdout.write(chr(b & 0xff))
+            self.stdout.flush()
             return
         
         fmts = {1: "B", 2: "S", 4: "I", 8: "Q"}
