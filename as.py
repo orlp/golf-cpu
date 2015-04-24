@@ -341,11 +341,12 @@ if __name__ == "__main__":
 
     with open(args.file) as in_file:
         lines = [l.rstrip() for l in in_file]
-        binary, debug = assemble(lines)
 
-        if args.run:
-            sys.exit(golf.GolfCPU(binary).run())
-        else:
-            debug["lines"] = lines
-            with open(args.o, "wb") as out_file: out_file.write(binary)
-            with open(args.d, "w") as dbg_file: json.dump(debug, dbg_file)
+    binary, debug = assemble(lines)
+
+    if args.run:
+        sys.exit(golf.GolfCPU(binary).run())
+    else:
+        debug["lines"] = lines
+        with open(args.o, "wb") as out_file: out_file.write(binary)
+        with open(args.d, "w") as dbg_file: json.dump(debug, dbg_file)
