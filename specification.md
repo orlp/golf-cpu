@@ -24,9 +24,9 @@ just a series of instructions:
     tolower:     
         # Arguments may be full Python expressions, as long as they evaluate to
         # a 64-bit integer or a register.
-        in c
+        lw c, -1
         add tmp, c, ord("a") - ord("A") # Equivalent to add a, c, 32.
-        out tmp
+        sw -1, c
         jmp tolower
 
 Finally, you can put read-only data into the binary, and get back an address to
