@@ -81,7 +81,7 @@ addressed _ztack_ pointer in _GOLF_, but `z` will always be `0x1000000000000000`
 at program startup, the other registers will be `0`.
 
 Memory address `0xffffffffffffffff` is special - stores to this address will be
-written to the virtual machine's stdin, reads come from stdout. You may only
+written to the virtual machine's stdout, reads come from stdin. You may only
 use `lw` and `sw` to load/store at this address, and both only store / load the
 lowest byte of the register. `lw` gives back -1 on EOF.
 
