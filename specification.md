@@ -124,8 +124,9 @@ Here are all the simple register-to-register instructions:
     lequ r, a, b   |    1  | less or equal          | r = a <= b 
     gequ r, a, b ' |    1  | greater or equal       | r = a >= b 
 
-A note on the shifts - unlike in C, any value for `b` is allowed and does the
-right thing on the _GOLF_.
+A note on the shifts - unlike in C, any value for `b` is allowed. Shifts widths
+bigger than 64 always result in 0, and negative shift widths flip the shift
+direction.
 
 The more complex register-to-register instructions:
 
