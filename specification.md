@@ -144,8 +144,9 @@ The more complex register-to-register instructions:
     divu r, s, a, b |   10  | divide   | Unsigned division of a by b. Quotient
                     |       |          | goes in r, remainder in s.
 
-Signed division and modulus work like they do in Python - the sign of the result
-is the same as the sign of the divisor, and rounds towards negative infinity.
+Signed division and modulo work like they do in Python - division floors towards
+negative infinity and the sign of the remainder is the same as the sign of the
+divisor.
 
 Memory and I/O instructions (`a` is a memory address for all below
 instructions):
