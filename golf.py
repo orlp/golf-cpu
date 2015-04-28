@@ -40,14 +40,14 @@ class GolfCPU:
     def shl(self, a, b):
         b = self.twos(b)
         if b < 0: return a >> -b
-        return a << b
+        return self.u(a << b)
 
     def shr(self, a, b):
         return self.shl(a, self.u(-self.twos(b)))
 
     def sar(self, a, b):
         a = self.twos(a)
-        return self.u(self.shr(a, b))
+        return self.shr(a, b)
     
     def mul(self, a, b):
         return self.mulu(self.twos(a), self.twos(b))
