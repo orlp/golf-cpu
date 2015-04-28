@@ -161,7 +161,7 @@ instructions):
     lsu  r, a      |    5  | load unsigned short | Load 16-bit int at a.
     li   r, a      |    5  | load int            | Load and sign-extend 32-bit 
                    |       |                     | int at a.
-    lsu  r, a      |    5  | load unsigned int   | Load 32-bit int at a.
+    liu  r, a      |    5  | load unsigned int   | Load 32-bit int at a.
     lw   r, a      |    5  | load word           | Load 64-bit int at a.
     sb   a, b      |    1  | store byte          | Store 8-bit int b at a.
     ss   a, b      |    1  | store short         | Store 16-bit int b at a.
