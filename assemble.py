@@ -186,9 +186,6 @@ def translate_pseudo_instr(instr, args):
     elif instr == "neg":
         return [["sub", [args[0], 0, args[0]]],]
 
-    elif instr == "sal":
-        return [["shl", args],]
-    
     elif instr == "jmp":
         return [["jz", [args[0], 0]],]
 

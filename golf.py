@@ -44,6 +44,10 @@ class GolfCPU:
 
     def shr(self, a, b):
         return self.shl(a, self.u(-self.twos(b)))
+    
+    def sal(self, a, b):
+        a = self.twos(a)
+        return self.shl(a, b)
 
     def sar(self, a, b):
         a = self.twos(a)
@@ -127,6 +131,7 @@ class GolfCPU:
         elif instr == "and":  self.regs[args[0]] = args[1] & args[2]
         elif instr == "shl":  self.regs[args[0]] = self.shl(args[1], args[2])
         elif instr == "shr":  self.regs[args[0]] = self.shr(args[1], args[2])
+        elif instr == "sal":  self.regs[args[0]] = self.sal(args[1], args[2])
         elif instr == "sar":  self.regs[args[0]] = self.sar(args[1], args[2])
         elif instr == "add":  self.regs[args[0]] = self.u(args[1] + args[2])
         elif instr == "sub":  self.regs[args[0]] = self.u(args[1] - args[2])

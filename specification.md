@@ -24,7 +24,7 @@ just a series of instructions:
     # colon. It adds a new variable containing a label object that is replaced
     # in the final binary by an offset in bytes from the start of the
     # instruction stream to the first instruction after the label.
-    tolower:     
+    tolower:
         # Arguments may be full Python expressions, as long as they evaluate to
         # a 64-bit integer, a register or a label.
         lw c, -1
@@ -37,14 +37,14 @@ it by calling the `data()` function. Repeated calls to the same data will return
 the same address:
 
     # Strings get turned into UTF-8 encoded series of bytes followed by a 0.
-    hello_world = "Hello, world!" 
+    hello_world = "Hello, world!"
 
     # Bytes are embedded as-is,
     rawbytes = b"\x00\x01"
 
     # Lists of integers will become a series of 64-bit little-endian integers in
     # the data section.
-    small_squares = [n*n for n in range(10)] 
+    small_squares = [n*n for n in range(10)]
 
         mov a, data(hello_world)
     print_loop:
@@ -100,7 +100,7 @@ _pseudo-instructions_ will be marked by an apostrophe (`'`) in the listing.
 
 Here are all the simple register-to-register instructions:
 
-    instruction    | cycle | mnemonic               | C syntax (uint64_t a, b) 
+    instruction    | cycle | mnemonic               | C syntax (uint64_t a, b)
     ---------------+-------+------------------------+---------------------------
     mov  r, a    ' |    1  | register move          | r = a
     not  r, a      |    1  | bitwise not            | r = ~a
@@ -109,7 +109,7 @@ Here are all the simple register-to-register instructions:
     and  r, a, b   |    1  | bitwise and            | r = a & b
     shl  r, a, b   |    1  | logical shift left     | r = a << b (int64_t b)
     shr  r, a, b   |    1  | logical shift right    | r = a >> b (int64_t b)
-    sal  r, a, b ' |    1  | arithmetic shift left  | r = a << b (int64_t a, b)
+    sal  r, a, b   |    1  | arithmetic shift left  | r = a << b (int64_t a, b)
     sar  r, a, b   |    1  | arithmetic shift right | r = a >> b (int64_t a, b)
     inc  r       ' |    1  | increment              | r++
     dec  r       ' |    1  | decrement              | r--
@@ -122,10 +122,10 @@ Here are all the simple register-to-register instructions:
     ge   r, a, b ' |    1  | greater                | r = a > b  (int64_t a, b)
     leq  r, a, b   |    1  | less or equal          | r = a <= b (int64_t a, b)
     geq  r, a, b ' |    1  | greater or equal       | r = a >= b (int64_t a, b)
-    leu  r, a, b   |    1  | less                   | r = a < b  
-    geu  r, a, b ' |    1  | greater                | r = a > b  
-    lequ r, a, b   |    1  | less or equal          | r = a <= b 
-    gequ r, a, b ' |    1  | greater or equal       | r = a >= b 
+    leu  r, a, b   |    1  | less                   | r = a < b
+    geu  r, a, b ' |    1  | greater                | r = a > b
+    lequ r, a, b   |    1  | less or equal          | r = a <= b
+    gequ r, a, b ' |    1  | greater or equal       | r = a >= b
 
 A note on the shifts - unlike in C, any value for `b` is allowed. Shifts widths
 bigger than 64 always result in 0, and negative shift widths flip the shift
@@ -153,13 +153,13 @@ instructions):
 
     instruction    | cycle | mnemonic            | description
     ---------------+-------+---------------------+------------------------------
-    lb   r, a      |    5  | load byte           | Load and sign-extend 
+    lb   r, a      |    5  | load byte           | Load and sign-extend
                    |       |                     | 8-bit int at a.
     lbu  r, a      |    5  | load unsigned byte  | Load 8-bit int at a.
-    ls   r, a      |    5  | load short          | Load and sign-extend 16-bit 
+    ls   r, a      |    5  | load short          | Load and sign-extend 16-bit
                    |       |                     | int at a.
     lsu  r, a      |    5  | load unsigned short | Load 16-bit int at a.
-    li   r, a      |    5  | load int            | Load and sign-extend 32-bit 
+    li   r, a      |    5  | load int            | Load and sign-extend 32-bit
                    |       |                     | int at a.
     liu  r, a      |    5  | load unsigned int   | Load 32-bit int at a.
     lw   r, a      |    5  | load word           | Load 64-bit int at a.
@@ -172,7 +172,7 @@ instructions):
     pop  r, a    ' |    6  | pop                 | Decrement a by 8 and load
                    |       |                     | 64-bit int at a.
     rand r         |  100  | random              | Put random 64-bit int in r.
-    
+
 Flow control:
 
     instruction    | cycle | mnemonic            | description
@@ -218,29 +218,29 @@ used in the instruction.
 
 All instruction ids can be found in the table below:
 
-    id | instr   id | instr    id | instr
-    ---+------   ---+------    ---+------
-    00 | not     10 | mulu     20 | jz     
-    01 | or      11 | div      21 | jnz    
-    02 | xor     12 | divu     22 | halt   
-    03 | and     13 | lb       7f | ret    
-    04 | shl     14 | lbu      
-    05 | shr     15 | ls       
-    06 | sar     16 | lsu      
-    07 | add     17 | li       
-    08 | sub     18 | liu      
-    09 | cmp     19 | lw       
-    0a | neq     1a | sb       
-    0b | le      1b | ss       
-    0c | leq     1c | si       
-    0d | leu     1d | sw       
-    0e | lequ    1e | rand     
-    0f | mul     1f | call     
-                       
+    id | instr   id | instr   id | instr
+    ---+------   ---+------   ---+------
+    00 | not     10 | mul     20 | call
+    01 | or      11 | mulu    21 | jz
+    02 | xor     12 | div     22 | jnz
+    03 | and     13 | divu    23 | halt
+    04 | shl     14 | lb      7f | ret
+    05 | shr     15 | lbu
+    06 | sal     16 | ls
+    07 | sar     17 | lsu
+    08 | add     18 | li
+    09 | sub     19 | liu
+    0a | cmp     1a | lw
+    0b | neq     1b | sb
+    0c | le      1c | ss
+    0d | leq     1d | si
+    0e | leu     1e | sw
+    0f | lequ    1f | rand
+
 ### _GOLF_ binary format.
 
 The first 4 bytes of the binary format is a little-endian 32-bit unsigned number
 indicating how large the data section is. Then follows that many bytes of data
 that will be accessible at starting address `0x2000000000000000`. Then the
 instruction stream begins, going until the end of the file.
-                       
+
