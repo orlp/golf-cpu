@@ -113,6 +113,7 @@ class GolfCPU:
             old_regs.update({k: self.regs[k] for k in args})
             self.isp = old_isp
             self.regs = old_regs
+            self.cycle_count += idata.cycle_counts["ret"]
             return
 
         # Look up register values.

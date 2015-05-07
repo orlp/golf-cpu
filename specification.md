@@ -184,7 +184,7 @@ Flow control:
     jmp  l       ' |    1  | unconditional jump  | Unconditionally jumps to l.
     jz   l, a      |    1  | jump on zero        | Jumps to l if a is zero.
     jnz  l, a      |    1  | jump on non-zero    | Jumps to l if a is non-zero.
-    halt a         |    9  | halt                | Halts the CPU with error code
+    halt a         |    0  | halt                | Halts the CPU with error code
                    |       |                     | a. Error code 0 is success.
 
 ---
