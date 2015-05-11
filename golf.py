@@ -177,6 +177,7 @@ class GolfCPU:
             if instr_name == "ret":
                 instr_args = [int(b) for b in bin(instr_flags)[2:][::-1]]
                 instr_args += [0] * (25 - len(instr_args))
+                instr_args += [1] # Always copy over z.
                 instr_args = [string.ascii_lowercase[i] for i, b in enumerate(instr_args) if b]
 
             else:

@@ -129,6 +129,12 @@ def check_instr_arguments(instr, args, lnr, lines):
             raise SyntaxError(
                 "Not all arguments to ret are registers on line {}:\n{}"
                 .format(lnr + 1, lines[lnr]))
+
+        if any(reg.reg == "z" for reg in args):
+            print(
+                "Warning: unnecessary z passed into ret on line {}:\n{}"
+                .format(lnr + 1, lines[lnr]))
+
         return
 
     if instr not in idata.instr_signatures:
