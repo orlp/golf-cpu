@@ -192,7 +192,12 @@ class GolfCPU:
 
                 instr_args += [0] * (5 - len(instr_args))
 
-            if instr_name == "halt": return instr_args[0]
+            if instr_name == "halt":
+                if isinstance(instr_args[0], str):
+                    return self.regs[instr_args[0]]
+
+                return instr_args[0]
+
             self.execute_instr(instr_name, instr_args)
 
         raise RuntimeError("Instruction pointer outside of executable memory!")
