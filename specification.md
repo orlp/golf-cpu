@@ -2,7 +2,7 @@
 
 The reference assembler is written in Python3. It turns a human readable
 assembly file into binary code that can run on the _GOLF_. The format is a
-simple one-instruction-per-line, with commas seperating arguments. The
+simple one-instruction-per-line, with commas separating arguments. The
 destinations always come before the operands. For example `a = b + c`:
 
     add a, b, c
@@ -89,7 +89,7 @@ written to the virtual machine's stdout, reads come from stdin. You may only
 use `lw` and `sw` to load/store at this address, and both only store / load the
 lowest byte of the register. `lw` gives back -1 on EOF.
 
-Instructions do not live in regular memory - they're in a seperate instruction
+Instructions do not live in regular memory - they're in a separate instruction
 memory that's neither readable nor writable. This memory starts at address `0`.
 Jump instructions take addresses into this memory. Execution may not go outside
 of the bounds of this memory - use the `halt` instruction to stop execution.
@@ -185,6 +185,10 @@ Flow control:
     jmp  l       ' |    1  | unconditional jump  | Unconditionally jumps to l.
     jz   l, a      |    1  | jump on zero        | Jumps to l if a is zero.
     jnz  l, a      |    1  | jump on non-zero    | Jumps to l if a is non-zero.
+    sz   a, n    ' |    1  | skip on zero        | Skips execution of the next n
+                   |       |                     | instructions if a is zero. n
+                   |       |                     | must be constant.
+    snz  a, n    ' |    1  | skip on non-zero    | Similarly, skips on non-zero.
     halt a         |    0  | halt                | Halts the CPU with error code
                    |       |                     | a. Error code 0 is success.
 

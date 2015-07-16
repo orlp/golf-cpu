@@ -12,6 +12,8 @@ import string
 import struct
 import sys
 import tokenize
+import math
+import inspect
 
 class SyntaxError(Exception):
     # Hide __main__.
@@ -21,7 +23,7 @@ class Label:
     def __init__(self, instr_nr, name):
         self.instr_nr = instr_nr
         self.name = name
-    
+
     def __repr__(self):
         return "Label({!r}, {!r})".format(self.instr_nr, self.name)
 
@@ -52,7 +54,7 @@ class Instr:
             elif  -2**31 <= arg < 2**31: n += 4
             elif  -2**63 <= arg < 2**64: n += 8
             else: assert(False)
-        
+
         return n
 
     def encode(self):
@@ -65,7 +67,7 @@ class Instr:
 
             return struct.pack("<I", instr_id | (instr_flag << 7))
 
-        immediates = b"" 
+        immediates = b""
         flags = []
         for arg in self.args:
             if isinstance(arg, Reg):
@@ -163,15 +165,22 @@ def check_instr_arguments(instr, args, lnr, lines):
     for op in args:
         if isinstance(op, Data):
             if not (isinstance(op.data, str) or isinstance(op.data, bytes) or
-                    (isinstance(op.data, collections.Iterable) and 
+                    (isinstance(op.data, collections.Iterable) and
                         all(isinstance(n, int) and -2**63 <= n < 2**64 for n in op.data))):
                 raise SyntaxError(
-                    "data() argument is not valid line {}:\n{}"
+                    "data() argument is not valid on line {}:\n{}"
+                    .format(lnr + 1, lines[lnr]))
+
+    if instr == "sz" or instr == "snz":
+        if not isinstance(args[1], int):
+                raise SyntaxError(
+                    "number of instructions to skip not a constant integer on line {}:\n{}"
                     .format(lnr + 1, lines[lnr]))
 
 
 
-def translate_pseudo_instr(instr, args):
+
+def translate_pseudo_instr(instr_nr, instr, args):
     """Turns an instruction and a list of arguments into a list of pairs of instructions and lists
     of arguments, without pseudo instructions."""
 
@@ -195,9 +204,15 @@ def translate_pseudo_instr(instr, args):
     elif instr == "jmp":
         return [["jz", [args[0], 0]],]
 
+    elif instr == "sz":
+        return [["jz", [Label(instr_nr + args[1] + 1, None), args[0]]],]
+
+    elif instr == "snz":
+        return [["jnz", [Label(instr_nr + args[1] + 1, None), args[0]]],]
+
     elif instr == "push":
         return [["sw", [args[0], args[1]]], ["add", [args[0], args[0], 8]]]
-    
+
     elif instr == "pop":
         return [["sub", [args[1], args[1], 8]], ["lw", [args[0], args[1]]]]
 
@@ -223,6 +238,8 @@ def preprocess(lines):
         no_backslash.append((lnr, l.strip()))
 
     variables = {c: Reg(c) for c in string.ascii_lowercase}
+    variables.update(dict([mem for mem in inspect.getmembers(math) if not mem[0].startswith("_")]))
+    variables["pow"] = pow
     variables["data"] = Data
     num_instructions = 0
 
@@ -241,7 +258,7 @@ def preprocess(lines):
                 raise SyntaxError(
                     "Trailing characters after label on line {}:\n{}".format(lnr + 1, lines[lnr]))
 
-            if ident in variables:
+            if ident in variables and isinstance(variables[ident], Label):
                 raise SyntaxError(
                     "Duplicate label name on line {}:\n{}".format(lnr + 1, lines[lnr]))
 
@@ -268,6 +285,10 @@ def preprocess(lines):
 
         # Assignment.
         if rest.startswith("="):
+            if ident in variables and isinstance(variables[ident], Label):
+                raise SyntaxError(
+                    "Overwriting label name on line {}:\n{}".format(lnr + 1, lines[lnr]))
+
             variables[ident] = eval(rest[1:], variables)
 
         # Instruction.
@@ -277,7 +298,7 @@ def preprocess(lines):
             instructions.append(Instr(lnr, ident, args))
 
     return instructions
-    
+
 
 def assemble(lines):
     instructions = preprocess(lines)
@@ -300,9 +321,9 @@ def assemble(lines):
     instr_nrs = {}
     n = 0
     no_pseudo = []
-    for i, instr in enumerate(instructions):
-        instr_nrs[i] = n
-        for name, args in translate_pseudo_instr(instr.instr, instr.args):
+    for instr_nr, instr in enumerate(instructions):
+        instr_nrs[instr_nr] = n
+        for name, args in translate_pseudo_instr(instr_nr, instr.instr, instr.args):
             no_pseudo.append(Instr(instr.debug_line, name, args))
             n += 1
 
@@ -315,7 +336,8 @@ def assemble(lines):
     for instr in no_pseudo:
         for i, arg in enumerate(instr.args):
             if isinstance(arg, Label):
-                arg.offset = labels[arg.name] = offsets[instr_nrs[arg.instr_nr]]
+                arg.offset = offsets[instr_nrs[arg.instr_nr]]
+                if arg.name: labels[arg.name] = arg.offset
 
     # Encode instructions.
     instr_stream = b""

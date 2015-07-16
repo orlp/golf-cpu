@@ -20,9 +20,8 @@ read_int_done:
 
 write_int:
     divu x, m, x, 10
-    jz write_int_done, x
+    sz x, 1
     call write_int
-write_int_done:
     add m, m, ord("0")
     sw -1, m
     ret
