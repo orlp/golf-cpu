@@ -79,9 +79,10 @@ A virtual machine implementation will likely produce debugging output.
 The virtual machine will have a user-defined amount of heap and stack memory
 available for the _GOLF_. It is also possible that the memory will grow
 on-demand. The heap starts at memory address `0`, the stack starts at memory
-address `0x1000000000000000`, and both grow upwards. There is no implicitly
-addressed _ztack_ pointer in _GOLF_, but `z` will always be `0x1000000000000000`
-at program startup, the other registers will be `0`.
+address `0x1000000000000000`, and both grow upwards. All memory is initially
+zeroed out. There is no implicitly addressed _ztack_ pointer in _GOLF_, but `z`
+will always be `0x1000000000000000` at program startup, the other registers will
+be `0`.
 
 Memory address `0xffffffffffffffff` is special - stores to this address will be
 written to the virtual machine's stdout, reads come from stdin. You may only

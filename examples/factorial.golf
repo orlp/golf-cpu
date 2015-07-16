@@ -2,6 +2,7 @@
     call factorial
     mov x, f
     call write_int
+    sw -1, ord("\n")
     halt 0
 
 read_int:

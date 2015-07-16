@@ -8,6 +8,7 @@ import random
 import argparse
 import ast
 
+
 class GolfCPU:
     def __init__(self, binary, i=sys.stdin, o=sys.stdout):
         data_len = struct.unpack_from("<I", binary)[0]
@@ -35,7 +36,7 @@ class GolfCPU:
 
     # Unsigned wrapping, int to two's complement.
     def u(self, x):
-        return x & ((1 << 64) - 1) 
+        return x & ((1 << 64) - 1)
 
     def shl(self, a, b):
         b = self.twos(b)
@@ -44,7 +45,7 @@ class GolfCPU:
 
     def shr(self, a, b):
         return self.shl(a, self.u(-self.twos(b)))
-    
+
     def sal(self, a, b):
         a = self.twos(a)
         return self.shl(a, b)
@@ -52,7 +53,7 @@ class GolfCPU:
     def sar(self, a, b):
         a = self.twos(a)
         return self.shr(a, b)
-    
+
     def mul(self, a, b):
         return self.mulu(self.twos(a), self.twos(b))
 
@@ -85,7 +86,7 @@ class GolfCPU:
             r = self.heap[a:a+width]
 
         fmts = {1: "B", 2: "S", 4: "I", 8: "Q"}
-        return struct.unpack("<" + fmts[width], bytes(r))[0]
+        return struct.unpack("<" + fmts[width], bytes(r + [0] * width))[0]
 
     def store(self, a, b, width):
         if a == 0xffffffffffffffff:
@@ -93,7 +94,7 @@ class GolfCPU:
             self.stdout.write(chr(b & 0xff))
             self.stdout.flush()
             return
-        
+
         fmts = {1: "B", 2: "S", 4: "I", 8: "Q"}
         b = struct.pack("<" + fmts[width], b & ((1 << (8*width)) - 1))
         if a >= 0x2000000000000000:
@@ -219,7 +220,7 @@ if __name__ == "__main__":
     with open(args.file, "rb") as binfile:
         golf = GolfCPU(binfile.read())
 
-    if not args.reg is None:
+    if args.reg is not None:
         for assignment in args.reg:
             reg, val = assignment.split("=")
             val = ast.literal_eval(val)
@@ -230,7 +231,7 @@ if __name__ == "__main__":
     if args.p:
         regs = args.p.split(",")
         print(", ".join(str(golf.regs[reg]) for reg in regs))
-    
+
     m = "Execution terminated after {} cycles with exit code {}.".format(golf.cycle_count, ret)
     if args.debug: m += " Register file at exit:"
     print(m)
