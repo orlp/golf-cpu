@@ -237,9 +237,10 @@ def preprocess(lines):
 
         no_backslash.append((lnr, l.strip()))
 
-    variables = {c: Reg(c) for c in string.ascii_lowercase}
-    variables.update(dict([mem for mem in inspect.getmembers(math) if not mem[0].startswith("_")]))
+    variables = dict(mem for mem in inspect.getmembers(math) if not mem[0].startswith("_"))
+    variables.update({c: Reg(c) for c in string.ascii_lowercase})
     variables["pow"] = pow
+    variables["math"] = math
     variables["data"] = Data
     num_instructions = 0
 
