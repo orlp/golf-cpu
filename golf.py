@@ -86,7 +86,7 @@ class GolfCPU:
             r = self.heap[a:a+width]
 
         fmts = {1: "B", 2: "S", 4: "I", 8: "Q"}
-        return struct.unpack_from("<" + fmts[width], bytes(r + [0] * width))[0]
+        return struct.unpack_from("<" + fmts[width], bytes(r) + b"\0" * width)[0]
 
     def store(self, a, b, width):
         if a == 0xffffffffffffffff:
