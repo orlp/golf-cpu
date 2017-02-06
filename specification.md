@@ -51,7 +51,7 @@ the same address:
         lbu c, a
         jz  c, done
         inc a
-        out c
+        sw -1, c
     done:
         halt
 
